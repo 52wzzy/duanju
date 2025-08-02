@@ -5,13 +5,39 @@ import os
 import json
 import re
 from PIL import Image, ImageDraw, ImageFont
-import cv2
 import numpy as np
 import requests
-import openai
 from dotenv import load_dotenv
-from ai_generator import AIImageGenerator, AdvancedImageProcessor
 import time
+
+# 可选依赖
+try:
+    import cv2
+    CV2_AVAILABLE = True
+except ImportError:
+    CV2_AVAILABLE = False
+    print("警告: opencv-python 未安装，某些高级图像处理功能将被禁用")
+
+try:
+    import openai
+    OPENAI_AVAILABLE = True
+except ImportError:
+    OPENAI_AVAILABLE = False
+    print("警告: openai 未安装，AI图片生成功能将被禁用")
+
+# 尝试导入AI生成器，优先使用简化版本
+try:
+    from ai_generator_simple import AIImageGenerator, AdvancedImageProcessor
+    AI_MODULES_AVAILABLE = True
+    print("使用简化版AI模块")
+except ImportError:
+    try:
+        from ai_generator import AIImageGenerator, AdvancedImageProcessor
+        AI_MODULES_AVAILABLE = True
+        print("使用完整版AI模块")
+    except ImportError:
+        AI_MODULES_AVAILABLE = False
+        print("警告: AI模块导入失败，将使用基础功能")
 
 load_dotenv()
 
@@ -34,9 +60,13 @@ os.makedirs('static', exist_ok=True)
 os.makedirs('templates', exist_ok=True)
 os.makedirs('static/fonts', exist_ok=True)
 
-# 初始化AI生成器和图片处理器
-ai_generator = AIImageGenerator()
-image_processor = AdvancedImageProcessor()
+# 初始化AI生成器和图片处理器（如果可用）
+if AI_MODULES_AVAILABLE:
+    ai_generator = AIImageGenerator()
+    image_processor = AdvancedImageProcessor()
+else:
+    ai_generator = None
+    image_processor = None
 
 # 违禁词列表
 FORBIDDEN_WORDS = [
@@ -290,7 +320,7 @@ def generate_main_image_api():
         if reference_filename:
             reference_path = os.path.join(app.config['UPLOAD_FOLDER'], reference_filename)
         
-        if use_enhanced:
+        if use_enhanced and AI_MODULES_AVAILABLE and image_processor:
             # 使用增强版图片生成
             output_path = image_processor.create_enhanced_main_image(
                 template_path, text_data, reference_path
@@ -350,6 +380,9 @@ def generate_detail_api():
 def generate_ai_image_api():
     """AI生成图片接口"""
     try:
+        if not AI_MODULES_AVAILABLE or not ai_generator:
+            return jsonify({'error': 'AI功能未启用，请检查依赖安装'}), 400
+        
         data = request.get_json()
         title = data.get('title', '')
         content = data.get('content', '')
