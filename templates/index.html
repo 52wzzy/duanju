@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>电商主图生成工具</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="/static/css/style.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container-fluid">
+        <!-- 头部导航 -->
+        <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4">
+            <div class="container">
+                <a class="navbar-brand" href="#">
+                    <i class="bi bi-image-fill me-2"></i>
+                    电商主图生成工具
+                </a>
+            </div>
+        </nav>
+
+        <div class="container">
+            <div class="row">
+                <!-- 左侧输入区域 -->
+                <div class="col-lg-6">
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-pencil-square me-2"></i>
+                                文章信息输入
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <!-- 文章标题 -->
+                            <div class="mb-3">
+                                <label for="articleTitle" class="form-label">文章标题 *</label>
+                                <input type="text" class="form-control" id="articleTitle" 
+                                       placeholder="请输入文章标题">
+                                <div class="form-text">将用于生成主图的主标题</div>
+                            </div>
+
+                            <!-- 文章内容 -->
+                            <div class="mb-3">
+                                <label for="articleContent" class="form-label">文章内容 *</label>
+                                <textarea class="form-control" id="articleContent" rows="8" 
+                                          placeholder="请输入文章内容，系统将从中提取关键信息用于生成主图和详情页"></textarea>
+                                <div class="form-text">系统将自动提取关键点用于设计</div>
+                            </div>
+
+                            <!-- 违禁词检查 -->
+                            <div class="mb-3">
+                                <button type="button" class="btn btn-warning" id="checkWordsBtn">
+                                    <i class="bi bi-shield-check me-1"></i>
+                                    检查违禁词
+                                </button>
+                                <div id="wordsCheckResult" class="mt-2"></div>
+                            </div>
+
+                            <!-- 草稿管理 -->
+                            <div class="mb-3">
+                                <div class="btn-group btn-group-sm">
+                                    <button type="button" class="btn btn-outline-secondary" onclick="autoSaveDraft()">
+                                        <i class="bi bi-save me-1"></i>
+                                        保存草稿
+                                    </button>
+                                    <button type="button" class="btn btn-outline-secondary" onclick="loadDraft()">
+                                        <i class="bi bi-folder-open me-1"></i>
+                                        加载草稿
+                                    </button>
+                                    <button type="button" class="btn btn-outline-danger" onclick="clearDraft()">
+                                        <i class="bi bi-trash me-1"></i>
+                                        清除草稿
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 图片上传区域 -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-cloud-upload me-2"></i>
+                                图片上传
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <!-- 模板上传 -->
+                            <div class="mb-3">
+                                <label for="templateUpload" class="form-label">主图模板 *</label>
+                                <input class="form-control" type="file" id="templateUpload" accept="image/*">
+                                <div class="form-text">上传主图框架模板</div>
+                                <div id="templatePreview" class="mt-2"></div>
+                            </div>
+
+                            <!-- 成品参考上传 -->
+                            <div class="mb-3">
+                                <label for="referenceUpload" class="form-label">成品参考图</label>
+                                <input class="form-control" type="file" id="referenceUpload" accept="image/*">
+                                <div class="form-text">上传成品参考图（可选）</div>
+                                <div id="referencePreview" class="mt-2"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- AI生图设置 -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-robot me-2"></i>
+                                AI生图设置
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label for="aiModel" class="form-label">AI模型选择</label>
+                                <select class="form-select" id="aiModel">
+                                    <option value="dalle3">DALL-E 3</option>
+                                    <option value="midjourney">Midjourney</option>
+                                    <option value="stable-diffusion">Stable Diffusion</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="apiKey" class="form-label">API Key</label>
+                                <input type="password" class="form-control" id="apiKey" 
+                                       placeholder="输入API密钥">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 右侧操作和预览区域 -->
+                <div class="col-lg-6">
+                    <!-- 生成按钮区域 -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-gear-fill me-2"></i>
+                                生成操作
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-grid gap-2">
+                                <button type="button" class="btn btn-primary btn-lg" id="generateMainImageBtn">
+                                    <i class="bi bi-image me-1"></i>
+                                    生成主图
+                                </button>
+                                <button type="button" class="btn btn-info btn-lg" id="generateAIImageBtn">
+                                    <i class="bi bi-robot me-1"></i>
+                                    AI生成图片
+                                </button>
+                                <button type="button" class="btn btn-success btn-lg" id="generateDetailBtn">
+                                    <i class="bi bi-file-earmark-text me-1"></i>
+                                    生成详情页
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 主图预览 -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-eye me-2"></i>
+                                主图预览
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div id="mainImagePreview" class="text-center">
+                                <div class="placeholder-img">
+                                    <i class="bi bi-image" style="font-size: 3rem; color: #ccc;"></i>
+                                    <p class="text-muted mt-2">主图将在这里显示</p>
+                                </div>
+                            </div>
+                            <div id="mainImageInfo" class="mt-3"></div>
+                        </div>
+                    </div>
+
+                    <!-- 详情页预览 -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-file-earmark-text me-2"></i>
+                                详情页预览
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div id="detailPagePreview">
+                                <div class="text-center text-muted">
+                                    <i class="bi bi-file-earmark-text" style="font-size: 3rem; color: #ccc;"></i>
+                                    <p class="mt-2">详情页内容将在这里显示</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 加载遮罩 -->
+    <div id="loadingOverlay" class="loading-overlay" style="display: none;">
+        <div class="loading-content">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2">正在处理中，请稍候...</p>
+        </div>
+    </div>
+
+    <!-- 脚本文件 -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/static/js/main.js"></script>
+</body>
+</html>
