@@ -113,18 +113,126 @@
                             </h5>
                         </div>
                         <div class="card-body">
+                            <!-- 模型分类选择 -->
                             <div class="mb-3">
-                                <label for="aiModel" class="form-label">AI模型选择</label>
-                                <select class="form-select" id="aiModel">
-                                    <option value="dalle3">DALL-E 3</option>
-                                    <option value="midjourney">Midjourney</option>
-                                    <option value="stable-diffusion">Stable Diffusion</option>
+                                <label class="form-label">模型类别</label>
+                                <div class="btn-group w-100" role="group">
+                                    <input type="radio" class="btn-check" name="modelCategory" id="domestic" value="domestic" checked>
+                                    <label class="btn btn-outline-success" for="domestic">🇨🇳 国内免费</label>
+                                    
+                                    <input type="radio" class="btn-check" name="modelCategory" id="international" value="international">
+                                    <label class="btn btn-outline-primary" for="international">🌍 国外付费</label>
+                                    
+                                    <input type="radio" class="btn-check" name="modelCategory" id="opensource" value="opensource">
+                                    <label class="btn btn-outline-info" for="opensource">📖 开源免费</label>
+                                </div>
+                            </div>
+
+                            <!-- 国内模型选择 -->
+                            <div class="mb-3" id="domesticModels">
+                                <label for="aiModelDomestic" class="form-label">国内AI模型</label>
+                                <select class="form-select" id="aiModelDomestic">
+                                    <option value="baidu_wenxin">百度 - 文心一格 (免费)</option>
+                                    <option value="ali_tongyi">阿里云 - 通义万相 (免费)</option>
+                                    <option value="zhipu_cogview">智谱AI - CogView (免费)</option>
+                                    <option value="minimax_text2image">MiniMax - 文生图 (免费)</option>
+                                    <option value="tencent_hunyuan">腾讯云 - 混元AI (免费)</option>
                                 </select>
                             </div>
-                            <div class="mb-3">
-                                <label for="apiKey" class="form-label">API Key</label>
-                                <input type="password" class="form-control" id="apiKey" 
-                                       placeholder="输入API密钥">
+
+                            <!-- 国外模型选择 -->
+                            <div class="mb-3" id="internationalModels" style="display: none;">
+                                <label for="aiModelInternational" class="form-label">国外AI模型</label>
+                                <select class="form-select" id="aiModelInternational">
+                                    <option value="dalle3">OpenAI - DALL-E 3</option>
+                                    <option value="stable_diffusion">Stability AI - Stable Diffusion</option>
+                                </select>
+                            </div>
+
+                            <!-- 开源模型选择 -->
+                            <div class="mb-3" id="opensourceModels" style="display: none;">
+                                <label for="aiModelOpensource" class="form-label">开源AI模型</label>
+                                <select class="form-select" id="aiModelOpensource">
+                                    <option value="huggingface_diffusion">Hugging Face - Diffusion</option>
+                                    <option value="replicate_sdxl">Replicate - SDXL</option>
+                                </select>
+                            </div>
+
+                            <!-- API配置区域 -->
+                            <div id="apiConfigArea">
+                                <!-- 单个API Key -->
+                                <div class="mb-3" id="singleApiKey">
+                                    <label for="apiKey" class="form-label">API Key</label>
+                                    <input type="password" class="form-control" id="apiKey" 
+                                           placeholder="输入API密钥">
+                                    <div class="form-text">
+                                        <small id="apiKeyHelp">请输入对应平台的API密钥</small>
+                                    </div>
+                                </div>
+
+                                <!-- 双密钥配置（百度、腾讯等） -->
+                                <div id="dualApiKeys" style="display: none;">
+                                    <div class="mb-3">
+                                        <label for="apiKeyPrimary" class="form-label">API Key / App ID</label>
+                                        <input type="password" class="form-control" id="apiKeyPrimary" 
+                                               placeholder="输入主API密钥">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="apiKeySecondary" class="form-label">Secret Key</label>
+                                        <input type="password" class="form-control" id="apiKeySecondary" 
+                                               placeholder="输入辅助密钥">
+                                    </div>
+                                </div>
+
+                                <!-- 快速获取链接 -->
+                                <div class="mb-3">
+                                    <div class="d-flex gap-2 flex-wrap">
+                                        <button type="button" class="btn btn-sm btn-outline-info" id="getApiKeyBtn">
+                                            <i class="bi bi-link-45deg me-1"></i>获取API密钥
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary" id="testApiBtn">
+                                            <i class="bi bi-check-circle me-1"></i>测试连接
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-outline-warning" id="saveConfigBtn">
+                                            <i class="bi bi-save me-1"></i>保存配置
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- 高级参数 -->
+                                <div class="accordion" id="advancedSettings">
+                                    <div class="accordion-item">
+                                        <h2 class="accordion-header">
+                                            <button class="accordion-button collapsed" type="button" 
+                                                    data-bs-toggle="collapse" data-bs-target="#collapseAdvanced">
+                                                <i class="bi bi-gear me-2"></i>高级参数
+                                            </button>
+                                        </h2>
+                                        <div id="collapseAdvanced" class="accordion-collapse collapse" 
+                                             data-bs-parent="#advancedSettings">
+                                            <div class="accordion-body">
+                                                <div class="row">
+                                                    <div class="col-md-6">
+                                                        <label for="imageSize" class="form-label">图片尺寸</label>
+                                                        <select class="form-select form-select-sm" id="imageSize">
+                                                            <option value="1024x1024">1024x1024 (推荐)</option>
+                                                            <option value="512x512">512x512</option>
+                                                            <option value="768x768">768x768</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label for="imageStyle" class="form-label">生成风格</label>
+                                                        <select class="form-select form-select-sm" id="imageStyle">
+                                                            <option value="commercial">商业风格</option>
+                                                            <option value="tutorial">教程风格</option>
+                                                            <option value="creative">创意风格</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>

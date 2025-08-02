@@ -24,6 +24,9 @@ function initializeEventListeners() {
     if (aiGenerateBtn) {
         aiGenerateBtn.addEventListener('click', generateAIImage);
     }
+
+    // AI模型选择事件
+    initializeAIModelListeners();
 }
 
 // 显示加载状态
@@ -719,6 +722,300 @@ document.addEventListener('DOMContentLoaded', function() {
     // 监听输入变化
     document.getElementById('articleTitle').addEventListener('input', autoSaveDraft);
     document.getElementById('articleContent').addEventListener('input', autoSaveDraft);
+});
+
+// AI模型管理功能
+function initializeAIModelListeners() {
+    // 模型类别切换
+    document.querySelectorAll('input[name="modelCategory"]').forEach(radio => {
+        radio.addEventListener('change', handleModelCategoryChange);
+    });
+
+    // 模型选择变化
+    document.getElementById('aiModelDomestic').addEventListener('change', handleModelSelectionChange);
+    document.getElementById('aiModelInternational').addEventListener('change', handleModelSelectionChange);
+    document.getElementById('aiModelOpensource').addEventListener('change', handleModelSelectionChange);
+
+    // API配置按钮
+    document.getElementById('getApiKeyBtn').addEventListener('click', openApiKeyHelp);
+    document.getElementById('testApiBtn').addEventListener('click', testApiConnection);
+    document.getElementById('saveConfigBtn').addEventListener('click', saveApiConfig);
+
+    // 初始化显示
+    handleModelCategoryChange();
+}
+
+function handleModelCategoryChange() {
+    const selectedCategory = document.querySelector('input[name="modelCategory"]:checked').value;
+    
+    // 隐藏所有模型选择
+    document.getElementById('domesticModels').style.display = 'none';
+    document.getElementById('internationalModels').style.display = 'none';
+    document.getElementById('opensourceModels').style.display = 'none';
+    
+    // 显示对应的模型选择
+    switch(selectedCategory) {
+        case 'domestic':
+            document.getElementById('domesticModels').style.display = 'block';
+            break;
+        case 'international':
+            document.getElementById('internationalModels').style.display = 'block';
+            break;
+        case 'opensource':
+            document.getElementById('opensourceModels').style.display = 'block';
+            break;
+    }
+    
+    handleModelSelectionChange();
+}
+
+function handleModelSelectionChange() {
+    const selectedCategory = document.querySelector('input[name="modelCategory"]:checked').value;
+    let selectedModel = '';
+    
+    // 获取当前选中的模型
+    switch(selectedCategory) {
+        case 'domestic':
+            selectedModel = document.getElementById('aiModelDomestic').value;
+            break;
+        case 'international':
+            selectedModel = document.getElementById('aiModelInternational').value;
+            break;
+        case 'opensource':
+            selectedModel = document.getElementById('aiModelOpensource').value;
+            break;
+    }
+    
+    // 根据模型调整API配置界面
+    updateApiConfigInterface(selectedModel);
+    updateApiKeyHelp(selectedModel);
+}
+
+function updateApiConfigInterface(modelId) {
+    const singleApiKey = document.getElementById('singleApiKey');
+    const dualApiKeys = document.getElementById('dualApiKeys');
+    
+    // 需要双密钥的模型
+    const dualKeyModels = ['baidu_wenxin', 'tencent_hunyuan'];
+    
+    if (dualKeyModels.includes(modelId)) {
+        singleApiKey.style.display = 'none';
+        dualApiKeys.style.display = 'block';
+    } else {
+        singleApiKey.style.display = 'block';
+        dualApiKeys.style.display = 'none';
+    }
+}
+
+function updateApiKeyHelp(modelId) {
+    const helpText = document.getElementById('apiKeyHelp');
+    const modelInfo = getModelInfo(modelId);
+    
+    if (modelInfo) {
+        helpText.textContent = `请输入${modelInfo.name}的API密钥`;
+        helpText.className = modelInfo.free ? 'text-success' : 'text-warning';
+    }
+}
+
+function getModelInfo(modelId) {
+    const modelInfoMap = {
+        'baidu_wenxin': { name: '百度文心一格', free: true, url: 'https://console.bce.baidu.com/' },
+        'ali_tongyi': { name: '阿里通义万相', free: true, url: 'https://dashscope.console.aliyun.com/' },
+        'zhipu_cogview': { name: '智谱CogView', free: true, url: 'https://open.bigmodel.cn/' },
+        'minimax_text2image': { name: 'MiniMax文生图', free: true, url: 'https://api.minimax.chat/' },
+        'tencent_hunyuan': { name: '腾讯混元', free: true, url: 'https://console.cloud.tencent.com/' },
+        'dalle3': { name: 'DALL-E 3', free: false, url: 'https://platform.openai.com/' },
+        'stable_diffusion': { name: 'Stability AI', free: false, url: 'https://platform.stability.ai/' },
+        'huggingface_diffusion': { name: 'Hugging Face', free: true, url: 'https://huggingface.co/' },
+        'replicate_sdxl': { name: 'Replicate', free: true, url: 'https://replicate.com/' }
+    };
+    
+    return modelInfoMap[modelId];
+}
+
+function openApiKeyHelp() {
+    // 打开API密钥获取指南页面
+    const helpWindow = window.open('/api-guide', '_blank', 'width=1000,height=800,scrollbars=yes');
+    if (!helpWindow) {
+        // 如果弹窗被阻止，显示提示
+        showMessage('请允许弹窗以查看API密钥获取指南', 'warning');
+    }
+}
+
+async function testApiConnection() {
+    const apiConfig = getCurrentApiConfig();
+    if (!apiConfig.model || !apiConfig.config.api_key) {
+        showMessage('请先配置API密钥', 'warning');
+        return;
+    }
+    
+    try {
+        showLoading();
+        
+        const response = await fetch('/api/test-ai-connection', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                model_id: apiConfig.model,
+                config: apiConfig.config
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showMessage('API连接测试成功！', 'success');
+        } else {
+            showMessage('API连接测试失败: ' + result.error, 'error');
+        }
+        
+    } catch (error) {
+        showMessage('连接测试失败: ' + error.message, 'error');
+    } finally {
+        hideLoading();
+    }
+}
+
+function saveApiConfig() {
+    const apiConfig = getCurrentApiConfig();
+    if (!apiConfig.model || !apiConfig.config.api_key) {
+        showMessage('请先配置API密钥', 'warning');
+        return;
+    }
+    
+    // 保存到localStorage
+    const savedConfigs = JSON.parse(localStorage.getItem('ai_api_configs') || '{}');
+    savedConfigs[apiConfig.model] = apiConfig.config;
+    localStorage.setItem('ai_api_configs', JSON.stringify(savedConfigs));
+    
+    showMessage('API配置已保存', 'success');
+}
+
+function loadSavedApiConfigs() {
+    const savedConfigs = JSON.parse(localStorage.getItem('ai_api_configs') || '{}');
+    
+    // 加载当前模型的配置
+    const selectedCategory = document.querySelector('input[name="modelCategory"]:checked').value;
+    let selectedModel = '';
+    
+    switch(selectedCategory) {
+        case 'domestic':
+            selectedModel = document.getElementById('aiModelDomestic').value;
+            break;
+        case 'international':
+            selectedModel = document.getElementById('aiModelInternational').value;
+            break;
+        case 'opensource':
+            selectedModel = document.getElementById('aiModelOpensource').value;
+            break;
+    }
+    
+    if (savedConfigs[selectedModel]) {
+        const config = savedConfigs[selectedModel];
+        
+        if (config.api_key) {
+            document.getElementById('apiKey').value = config.api_key;
+        }
+        
+        if (config.secret_key) {
+            document.getElementById('apiKeyPrimary').value = config.api_key;
+            document.getElementById('apiKeySecondary').value = config.secret_key;
+        }
+    }
+}
+
+function getCurrentApiConfig() {
+    const selectedCategory = document.querySelector('input[name="modelCategory"]:checked').value;
+    let selectedModel = '';
+    
+    switch(selectedCategory) {
+        case 'domestic':
+            selectedModel = document.getElementById('aiModelDomestic').value;
+            break;
+        case 'international':
+            selectedModel = document.getElementById('aiModelInternational').value;
+            break;
+        case 'opensource':
+            selectedModel = document.getElementById('aiModelOpensource').value;
+            break;
+    }
+    
+    const config = {};
+    const dualKeyModels = ['baidu_wenxin', 'tencent_hunyuan'];
+    
+    if (dualKeyModels.includes(selectedModel)) {
+        config.api_key = document.getElementById('apiKeyPrimary').value.trim();
+        config.secret_key = document.getElementById('apiKeySecondary').value.trim();
+    } else {
+        config.api_key = document.getElementById('apiKey').value.trim();
+    }
+    
+    return {
+        model: selectedModel,
+        config: config
+    };
+}
+
+// 增强的AI图片生成功能
+async function generateAIImage() {
+    const title = document.getElementById('articleTitle').value.trim();
+    const content = document.getElementById('articleContent').value.trim();
+    const apiConfig = getCurrentApiConfig();
+    const imageSize = document.getElementById('imageSize').value;
+    const imageStyle = document.getElementById('imageStyle').value;
+    
+    if (!title || !content) {
+        showMessage('请输入完整的标题和内容', 'error');
+        return;
+    }
+    
+    if (!apiConfig.config.api_key) {
+        showMessage('请配置API密钥', 'error');
+        return;
+    }
+    
+    try {
+        showLoading();
+        
+        const response = await fetch('/api/generate-ai-image-enhanced', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                title,
+                content,
+                model_id: apiConfig.model,
+                config: apiConfig.config,
+                size: imageSize,
+                style: imageStyle
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            displayAIImageResult(result);
+            showMessage(`${getModelInfo(apiConfig.model).name} 生成成功！`, 'success');
+        } else {
+            showMessage('AI生成失败: ' + result.error, 'error');
+        }
+        
+    } catch (error) {
+        showMessage('AI生成失败: ' + error.message, 'error');
+    } finally {
+        hideLoading();
+    }
+}
+
+// 页面加载时加载保存的配置
+document.addEventListener('DOMContentLoaded', function() {
+    // 延迟加载配置，确保UI已初始化
+    setTimeout(() => {
+        loadSavedApiConfigs();
+    }, 500);
 });
 
 // 网络错误处理

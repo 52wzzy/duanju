@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI模型API密钥获取指南</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container my-5">
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                <h1 class="text-center mb-5">
+                    <i class="bi bi-key-fill text-primary me-3"></i>
+                    AI模型API密钥获取指南
+                </h1>
+
+                <!-- 国内免费模型 -->
+                <div class="card mb-4">
+                    <div class="card-header bg-success text-white">
+                        <h3 class="mb-0">🇨🇳 国内免费模型</h3>
+                    </div>
+                    <div class="card-body">
+                        
+                        <!-- 百度文心一格 -->
+                        <div class="border-bottom pb-4 mb-4">
+                            <h5>百度文心一格</h5>
+                            <p class="text-muted">百度推出的AI绘画平台，免费额度丰富</p>
+                            <ol>
+                                <li>访问 <a href="https://console.bce.baidu.com/" target="_blank">百度智能云控制台</a></li>
+                                <li>注册并登录百度账号</li>
+                                <li>搜索"文心一格"或"ERNIE-ViLG"</li>
+                                <li>开通服务后，在应用列表中创建应用</li>
+                                <li>获取 API Key 和 Secret Key</li>
+                            </ol>
+                            <div class="alert alert-info">
+                                <strong>免费额度:</strong> 每月1000次调用
+                            </div>
+                        </div>
+
+                        <!-- 阿里通义万相 -->
+                        <div class="border-bottom pb-4 mb-4">
+                            <h5>阿里通义万相</h5>
+                            <p class="text-muted">阿里云推出的多模态AI平台</p>
+                            <ol>
+                                <li>访问 <a href="https://dashscope.console.aliyun.com/" target="_blank">DashScope控制台</a></li>
+                                <li>注册阿里云账号并实名认证</li>
+                                <li>开通DashScope服务</li>
+                                <li>在API-KEY管理中创建密钥</li>
+                                <li>复制生成的API Key</li>
+                            </ol>
+                            <div class="alert alert-info">
+                                <strong>免费额度:</strong> 新用户有一定免费额度
+                            </div>
+                        </div>
+
+                        <!-- 智谱AI -->
+                        <div class="border-bottom pb-4 mb-4">
+                            <h5>智谱AI CogView</h5>
+                            <p class="text-muted">智谱AI推出的文生图模型</p>
+                            <ol>
+                                <li>访问 <a href="https://open.bigmodel.cn/" target="_blank">智谱AI开放平台</a></li>
+                                <li>注册并登录账号</li>
+                                <li>完成个人认证</li>
+                                <li>在API密钥页面创建新密钥</li>
+                                <li>复制生成的API Key</li>
+                            </ol>
+                            <div class="alert alert-info">
+                                <strong>免费额度:</strong> 注册送免费token
+                            </div>
+                        </div>
+
+                        <!-- MiniMax -->
+                        <div class="pb-4 mb-4">
+                            <h5>MiniMax文生图</h5>
+                            <p class="text-muted">MiniMax推出的AI创作平台</p>
+                            <ol>
+                                <li>访问 <a href="https://api.minimax.chat/" target="_blank">MiniMax开放平台</a></li>
+                                <li>注册并登录账号</li>
+                                <li>在控制台创建应用</li>
+                                <li>获取API Key</li>
+                            </ol>
+                            <div class="alert alert-info">
+                                <strong>免费额度:</strong> 新用户免费试用
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 国外付费模型 -->
+                <div class="card mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h3 class="mb-0">🌍 国外付费模型</h3>
+                    </div>
+                    <div class="card-body">
+                        
+                        <!-- OpenAI DALL-E 3 -->
+                        <div class="border-bottom pb-4 mb-4">
+                            <h5>OpenAI DALL-E 3</h5>
+                            <p class="text-muted">目前最先进的AI绘画模型之一</p>
+                            <ol>
+                                <li>访问 <a href="https://platform.openai.com/" target="_blank">OpenAI Platform</a></li>
+                                <li>注册OpenAI账号</li>
+                                <li>绑定信用卡（需要海外支付方式）</li>
+                                <li>在API Keys页面创建新密钥</li>
+                                <li>复制生成的API Key</li>
+                            </ol>
+                            <div class="alert alert-warning">
+                                <strong>付费:</strong> 按使用量计费，1024x1024图片约$0.04/张
+                            </div>
+                        </div>
+
+                        <!-- Stability AI -->
+                        <div class="pb-4 mb-4">
+                            <h5>Stability AI</h5>
+                            <p class="text-muted">Stable Diffusion的官方API服务</p>
+                            <ol>
+                                <li>访问 <a href="https://platform.stability.ai/" target="_blank">Stability AI Platform</a></li>
+                                <li>注册账号</li>
+                                <li>绑定支付方式</li>
+                                <li>在API Keys页面创建密钥</li>
+                            </ol>
+                            <div class="alert alert-warning">
+                                <strong>付费:</strong> 按使用量计费
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 开源免费模型 -->
+                <div class="card mb-4">
+                    <div class="card-header bg-info text-white">
+                        <h3 class="mb-0">📖 开源免费模型</h3>
+                    </div>
+                    <div class="card-body">
+                        
+                        <!-- Hugging Face -->
+                        <div class="border-bottom pb-4 mb-4">
+                            <h5>Hugging Face</h5>
+                            <p class="text-muted">开源AI模型平台，完全免费</p>
+                            <ol>
+                                <li>访问 <a href="https://huggingface.co/" target="_blank">Hugging Face</a></li>
+                                <li>注册账号</li>
+                                <li>在Settings > Access Tokens中创建token</li>
+                                <li>选择"read"权限即可</li>
+                            </ol>
+                            <div class="alert alert-success">
+                                <strong>完全免费:</strong> 无使用限制，但可能有速率限制
+                            </div>
+                        </div>
+
+                        <!-- Replicate -->
+                        <div class="pb-4 mb-4">
+                            <h5>Replicate</h5>
+                            <p class="text-muted">开源模型运行平台，有免费额度</p>
+                            <ol>
+                                <li>访问 <a href="https://replicate.com/" target="_blank">Replicate</a></li>
+                                <li>注册账号</li>
+                                <li>在Account settings中找到API tokens</li>
+                                <li>创建新的API token</li>
+                            </ol>
+                            <div class="alert alert-success">
+                                <strong>免费额度:</strong> 每月有一定免费运行时间
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 使用提示 -->
+                <div class="card">
+                    <div class="card-header bg-warning">
+                        <h3 class="mb-0">💡 使用提示</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6>推荐顺序</h6>
+                                <ol>
+                                    <li><strong>智谱AI</strong> - 注册简单，额度充足</li>
+                                    <li><strong>百度文心一格</strong> - 国内稳定</li>
+                                    <li><strong>阿里通义万相</strong> - 质量较高</li>
+                                    <li><strong>Hugging Face</strong> - 完全免费</li>
+                                </ol>
+                            </div>
+                            <div class="col-md-6">
+                                <h6>注意事项</h6>
+                                <ul>
+                                    <li>国内模型无需翻墙，速度更快</li>
+                                    <li>API密钥请妥善保管，不要泄露</li>
+                                    <li>建议先用免费额度测试效果</li>
+                                    <li>可以配置多个模型备用</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-center mt-4">
+                    <button onclick="window.close()" class="btn btn-secondary">关闭窗口</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

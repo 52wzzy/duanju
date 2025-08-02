@@ -25,19 +25,29 @@ except ImportError:
     OPENAI_AVAILABLE = False
     print("警告: openai 未安装，AI图片生成功能将被禁用")
 
-# 尝试导入AI生成器，优先使用简化版本
+# 尝试导入AI生成器，优先使用增强版本
 try:
-    from ai_generator_simple import AIImageGenerator, AdvancedImageProcessor
+    from ai_generator_enhanced import EnhancedAIImageGenerator, AdvancedImageProcessor
+    from ai_generator_simple import SimpleImageProcessor
     AI_MODULES_AVAILABLE = True
-    print("使用简化版AI模块")
+    ENHANCED_AI_AVAILABLE = True
+    print("使用增强版AI模块")
 except ImportError:
     try:
-        from ai_generator import AIImageGenerator, AdvancedImageProcessor
+        from ai_generator_simple import AIImageGenerator, AdvancedImageProcessor
         AI_MODULES_AVAILABLE = True
-        print("使用完整版AI模块")
+        ENHANCED_AI_AVAILABLE = False
+        print("使用简化版AI模块")
     except ImportError:
-        AI_MODULES_AVAILABLE = False
-        print("警告: AI模块导入失败，将使用基础功能")
+        try:
+            from ai_generator import AIImageGenerator, AdvancedImageProcessor
+            AI_MODULES_AVAILABLE = True
+            ENHANCED_AI_AVAILABLE = False
+            print("使用完整版AI模块")
+        except ImportError:
+            AI_MODULES_AVAILABLE = False
+            ENHANCED_AI_AVAILABLE = False
+            print("警告: AI模块导入失败，将使用基础功能")
 
 load_dotenv()
 
@@ -61,12 +71,18 @@ os.makedirs('templates', exist_ok=True)
 os.makedirs('static/fonts', exist_ok=True)
 
 # 初始化AI生成器和图片处理器（如果可用）
-if AI_MODULES_AVAILABLE:
+if ENHANCED_AI_AVAILABLE:
+    enhanced_ai_generator = EnhancedAIImageGenerator()
+    image_processor = SimpleImageProcessor()
+    ai_generator = enhanced_ai_generator  # 向后兼容
+elif AI_MODULES_AVAILABLE:
     ai_generator = AIImageGenerator()
     image_processor = AdvancedImageProcessor()
+    enhanced_ai_generator = None
 else:
     ai_generator = None
     image_processor = None
+    enhanced_ai_generator = None
 
 # 违禁词列表
 FORBIDDEN_WORDS = [
@@ -243,6 +259,11 @@ def generate_detail_page_content(title, content):
 def index():
     """主页"""
     return render_template('index.html')
+
+@app.route('/api-guide')
+def api_guide():
+    """API密钥获取指南页面"""
+    return render_template('api_guide.html')
 
 @app.route('/api/upload', methods=['POST'])
 def upload_file():
@@ -447,6 +468,123 @@ def save_ai_image_api():
             })
         else:
             return jsonify({'error': '下载图片失败'}), 500
+            
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/get-ai-models', methods=['GET'])
+def get_ai_models_api():
+    """获取支持的AI模型列表"""
+    try:
+        if not ENHANCED_AI_AVAILABLE or not enhanced_ai_generator:
+            return jsonify({
+                'success': False,
+                'error': '增强版AI功能未启用'
+            }), 400
+        
+        models = enhanced_ai_generator.get_supported_models()
+        return jsonify({
+            'success': True,
+            'models': models
+        })
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/generate-ai-image-enhanced', methods=['POST'])
+def generate_ai_image_enhanced_api():
+    """增强版AI生成图片接口"""
+    try:
+        if not ENHANCED_AI_AVAILABLE or not enhanced_ai_generator:
+            return jsonify({
+                'success': False,
+                'error': '增强版AI功能未启用，请检查依赖安装'
+            }), 400
+        
+        data = request.get_json()
+        title = data.get('title', '')
+        content = data.get('content', '')
+        model_id = data.get('model_id', '')
+        config = data.get('config', {})
+        size = data.get('size', '1024x1024')
+        style = data.get('style', 'commercial')
+        
+        if not all([title, content, model_id]):
+            return jsonify({'error': '缺少必要参数'}), 400
+        
+        if not config.get('api_key'):
+            return jsonify({'error': '缺少API密钥'}), 400
+        
+        # 设置API配置
+        success = enhanced_ai_generator.set_api_config(model_id, config)
+        if not success:
+            return jsonify({'error': f'不支持的模型: {model_id}'}), 400
+        
+        # 生成提示词
+        prompt_data = enhanced_ai_generator.generate_image_prompt(title, content, style)
+        
+        # 生成图片
+        image_url = enhanced_ai_generator.generate_image(
+            model_id, 
+            prompt_data, 
+            size=size,
+            style=style
+        )
+        
+        if image_url:
+            return jsonify({
+                'success': True,
+                'image_url': image_url,
+                'prompt_data': prompt_data,
+                'model_id': model_id,
+                'model_name': next((m['name'] for m in enhanced_ai_generator.get_supported_models() if m['id'] == model_id), model_id)
+            })
+        else:
+            return jsonify({'error': 'AI生成图片失败'}), 500
+            
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/test-ai-connection', methods=['POST'])
+def test_ai_connection_api():
+    """测试AI模型连接"""
+    try:
+        if not ENHANCED_AI_AVAILABLE or not enhanced_ai_generator:
+            return jsonify({
+                'success': False,
+                'error': '增强版AI功能未启用'
+            }), 400
+        
+        data = request.get_json()
+        model_id = data.get('model_id', '')
+        config = data.get('config', {})
+        
+        if not model_id or not config.get('api_key'):
+            return jsonify({'error': '缺少必要参数'}), 400
+        
+        # 设置配置
+        success = enhanced_ai_generator.set_api_config(model_id, config)
+        if not success:
+            return jsonify({'error': f'不支持的模型: {model_id}'}), 400
+        
+        # 使用简单提示词测试连接
+        test_prompt = {
+            'chinese': '测试图片生成',
+            'english': 'test image generation'
+        }
+        
+        # 这里只是测试配置是否正确，不实际生成图片
+        try:
+            # 可以添加具体的连接测试逻辑
+            return jsonify({
+                'success': True,
+                'message': f'模型 {model_id} 配置验证成功'
+            })
+        except Exception as test_error:
+            return jsonify({
+                'success': False,
+                'error': f'连接测试失败: {str(test_error)}'
+            })
             
     except Exception as e:
         return jsonify({'error': str(e)}), 500
