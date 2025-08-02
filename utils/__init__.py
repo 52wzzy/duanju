@@ -1,0 +1,1 @@
+# Utils package for the E-commerce Image Generator
