@@ -4,22 +4,128 @@ from typing import Dict, List
 
 # AI模型配置
 AI_MODELS = {
+    # OpenAI模型（付费）
     "openai": {
         "dalle-3": {
             "name": "DALL-E 3",
+            "provider": "OpenAI",
             "max_resolution": "1024x1792",
-            "supports_text": True
+            "supports_text": True,
+            "cost": "付费",
+            "quality": "极高",
+            "speed": "中等",
+            "api_endpoint": "https://api.openai.com/v1/images/generations"
         },
         "dalle-2": {
             "name": "DALL-E 2", 
+            "provider": "OpenAI",
             "max_resolution": "1024x1024",
-            "supports_text": False
+            "supports_text": False,
+            "cost": "付费",
+            "quality": "高",
+            "speed": "快",
+            "api_endpoint": "https://api.openai.com/v1/images/generations"
         }
     },
+    
+    # 国内免费模型
+    "zhipu": {
+        "cogview-3": {
+            "name": "CogView-3",
+            "provider": "智谱AI",
+            "max_resolution": "1024x1024",
+            "supports_text": True,
+            "cost": "免费额度",
+            "quality": "高",
+            "speed": "快",
+            "api_endpoint": "https://open.bigmodel.cn/api/paas/v4/images/generations",
+            "free_quota": "每日100次"
+        }
+    },
+    
+    "baidu": {
+        "ernie-vilg": {
+            "name": "文心一格",
+            "provider": "百度",
+            "max_resolution": "1024x1024",
+            "supports_text": True,
+            "cost": "免费额度",
+            "quality": "高",
+            "speed": "快",
+            "api_endpoint": "https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/text2image",
+            "free_quota": "每日50次"
+        }
+    },
+    
+    "alibaba": {
+        "tongyi-wanxiang": {
+            "name": "通义万相",
+            "provider": "阿里云",
+            "max_resolution": "1024x1024", 
+            "supports_text": True,
+            "cost": "免费额度",
+            "quality": "高",
+            "speed": "快",
+            "api_endpoint": "https://dashscope.aliyuncs.com/api/v1/services/aigc/text2image/image-synthesis",
+            "free_quota": "每月500次"
+        }
+    },
+    
+    "tencent": {
+        "hunyuan-dit": {
+            "name": "混元DiT",
+            "provider": "腾讯云",
+            "max_resolution": "1024x1024",
+            "supports_text": True,
+            "cost": "免费额度",
+            "quality": "高", 
+            "speed": "快",
+            "api_endpoint": "https://hunyuan.tencentcloudapi.com",
+            "free_quota": "每日100次"
+        }
+    },
+    
+    "iflytek": {
+        "spark-image": {
+            "name": "讯飞星火绘画",
+            "provider": "科大讯飞",
+            "max_resolution": "1024x1024",
+            "supports_text": True,
+            "cost": "免费额度",
+            "quality": "中等",
+            "speed": "快",
+            "api_endpoint": "https://spark-api-open.xf-yun.com/v1/images/generations",
+            "free_quota": "每日20次"
+        }
+    },
+    
+    # 开源模型（需要本地部署或免费API）
+    "stable_diffusion": {
+        "sd-xl": {
+            "name": "Stable Diffusion XL",
+            "provider": "Stability AI",
+            "max_resolution": "1024x1024",
+            "supports_text": True,
+            "cost": "免费（本地）",
+            "quality": "高",
+            "speed": "慢",
+            "api_endpoint": "http://localhost:7860/api/v1/txt2img",
+            "free_quota": "无限制（本地部署）"
+        }
+    },
+    
     "midjourney": {
-        "name": "Midjourney",
-        "max_resolution": "1024x1024",
-        "supports_text": True
+        "mj-v6": {
+            "name": "Midjourney V6",
+            "provider": "Midjourney",
+            "max_resolution": "1024x1024",
+            "supports_text": True,
+            "cost": "付费",
+            "quality": "极高",
+            "speed": "慢",
+            "api_endpoint": "https://api.midjourney.com/v1/imagine",
+            "free_quota": "25次试用"
+        }
     }
 }
 
